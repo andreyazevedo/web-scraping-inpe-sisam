@@ -1,9 +1,7 @@
 import fs from 'fs';
-import stringHash from 'string-hash';
-import { fetchJSON } from './http';
 import config from './states.json';
 
-const readFile = path => {
+export const readFile = path => {
   try {
     const file = fs.readFileSync(path, 'utf8');
 
@@ -32,7 +30,7 @@ export const fmtPeriod = () => {
   return [{ start, end }];
 };
 
-export const writeToFile = (name, data) => fs.writeFile(name, JSON.stringify(data), () => { });
+export const writeToFile = (name, data) => fs.writeFileSync(name, JSON.stringify(data));
 
 export const fmtApiUrl = (uf, {start, end}, page = 1, pagination = 2000) => {
   const domain = 'https://queimadas.dgi.inpe.br/queimadas/sisam/v2/api/variaveis?';
@@ -42,21 +40,3 @@ export const fmtApiUrl = (uf, {start, end}, page = 1, pagination = 2000) => {
 
   return `${domain}${state}&${variables}&${date}`;
 };
-
-export const fetchSisamApi = async url => {
-  const urlHash = stringHash(url);
-  const path = `cache/${urlHash}.json`;
-  const file = readFile(path);
-
-  if (file) {
-    return {...file, fromCache: true};
-  }
-
-  const data = await fetchJSON(url);
-
-  if (!data.error) {
-    writeToFile(path, data);
-  }
-
-  return data;
-}
