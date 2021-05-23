@@ -1,9 +1,7 @@
 import fs from 'fs';
 import stringHash from 'string-hash';
 import { fetchJSON } from './http';
-
-// export const STATES = [12,27,13,16,29,23,53,32,52,21,31,50,51,15,25,26,22,41,33,24,11,14,43,42,28,35,17];
-export const STATES = [29];
+import config from './states.json';
 
 const readFile = path => {
   try {
@@ -13,6 +11,25 @@ const readFile = path => {
   } catch (error) {
     return;
   }
+};
+
+export const fmtStates = () => {
+  const statesFromEnv = process.env.states?.split(',');
+  const statesFromConfig = Object.keys(config);
+
+  return statesFromEnv || statesFromConfig;
+};
+
+export const fmtPeriod = () => {
+  const { start, end, year } = process.env;
+  const formattedYear = year?.split(',');
+  const years = formattedYear ? [].concat(formattedYear) : undefined;
+
+  if (years) {
+    return years.map(year => ({ start: `01/01/${year}`, end: `31/12/${year}` }));
+  }
+
+  return [{ start, end }];
 };
 
 export const writeToFile = (name, data) => fs.writeFile(name, JSON.stringify(data), () => { });
