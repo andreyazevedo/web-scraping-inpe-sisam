@@ -1,6 +1,6 @@
 import stringHash from 'string-hash';
 import { fetchJSON } from './http';
-import { fmtStates, fmtPeriod, readFile, fmtApiUrl } from './helpers';
+import { fmtStates, fmtPeriod, readFile, fmtApiUrl, writeToFile } from './helpers';
 
 export const fetchSisamApi = async url => {
   const urlHash = stringHash(url);
