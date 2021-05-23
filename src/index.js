@@ -1,5 +1,4 @@
-import { fmtApiUrl, fetchSisamApi, STATES } from './helpers';
-import ufSlug from './states.json';
+import { fmtApiUrl, fetchSisamApi, fmtStates } from './helpers';
 
 const getDataFromState = async (state, year) => {
   const period = { start: `01/01/${year}`, end: `31/12/${year}` };
@@ -26,15 +25,15 @@ const getDataFromState = async (state, year) => {
 };
 
 const main = async () => {
-  const statesData = await Promise.all(STATES.map(async state => {
+  const states = fmtStates();
+
+ await Promise.all(states.map(async state => {
     const data = await getDataFromState(state, 2013);
     const total = data.length;
     const errors = data.filter(page => page.error);
 
     return { id: state, uf: ufSlug[state].uf, errors, total: data.length, success: total - errors.length };
   }));
-
-  console.log('>>> result', statesData);
 };
 
 main();
