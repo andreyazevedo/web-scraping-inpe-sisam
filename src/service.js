@@ -3,6 +3,7 @@ import ProgressBar from 'cli-progress';
 import { fetchJSON } from './http';
 import config from './states.json';
 import { fmtStates, fmtPeriod, readFile, fmtApiUrl, writeToFile } from './helpers';
+import { pagesQueue, statesQueue } from './queues';
 
 export const fetchSisamApi = async url => {
   const urlHash = stringHash(url);
@@ -30,17 +31,17 @@ const getDataFromState = async (state, period) => {
   const stateSlug = config[state].slug; 
 
   const opt = {
-    format: `Downloading: [{bar}] {percentage}% |[${stateSlug}]  ${period.start} - ${period.end} | pages: {value}/{total}`,
+    format: `Downloading: [{bar}] {percentage}% | ${stateSlug} ${period.start} - ${period.end} | pages: {value}/{total}`,
   }
   const progressUI = new ProgressBar.SingleBar(opt, ProgressBar.Presets.shades_classic);
   progressUI.start(listOfPages.length, 0);
 
-  const result = await Promise.all(listOfPages.map((_, index) => {
+  const result = await pagesQueue.addAll(listOfPages.map((_, index) => () => {
     const current = index + 1;
     const url = fmtApiUrl(state, period, current);
 
     return fetchSisamApi(url).then(data => {
-      progressUI.increment();
+    progressUI.increment();
 
       return data;
     });
@@ -55,5 +56,5 @@ export const scrapSisamData = async () => {
   const states = fmtStates();
   const period = fmtPeriod();
   
-  period.map(period => states.map(state => getDataFromState(state, period)));
+  period.map(period => statesQueue.addAll(states.map(state => () => getDataFromState(state, period))));
 }
