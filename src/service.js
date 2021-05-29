@@ -1,3 +1,4 @@
+import fs from 'fs';
 import stringHash from 'string-hash';
 import ProgressBar from 'cli-progress';
 import { fetchJSON } from './http';
@@ -49,6 +50,19 @@ const getDataFromState = async (state, period) => {
 
   progressUI.stop();
 
+  const hasError = result.find(data => data.error);
+
+  if (hasError) {
+    return getDataFromState(state, period);
+  }
+
+  const slugPeriod = `${period.start.replaceAll('/', '-')}_${period.end.replaceAll('/', '-')}`;
+  const stateUf = config[state].uf;
+  const path = `dataset/${stateUf}_${slugPeriod}.json`;
+  const dataset = result.map(page => page.items).flat();
+
+  writeToFile(path, dataset);
+
   return result;
 };
 
@@ -57,4 +71,14 @@ export const scrapSisamData = async () => {
   const period = fmtPeriod();
   
   period.map(period => statesQueue.addAll(states.map(state => () => getDataFromState(state, period))));
+}
+
+export const setFolders = () => {
+  const paths = ['cache', 'dataset'];
+
+  return paths.map(path => {
+    if (!fs.existsSync(path)){
+      fs.mkdirSync(path);
+    }
+  });
 }

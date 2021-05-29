@@ -1,6 +1,7 @@
-import { scrapSisamData } from './service';
+import { scrapSisamData, setFolders } from './service';
 
 const main = () => {
+  setFolders();
   scrapSisamData();
 };
 
